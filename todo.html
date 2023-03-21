@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
+      crossorigin="anonymous"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  </head>
+  <style>
+    .completed {
+      color: #949494;
+      text-decoration: line-through;
+    }
+  </style>
+  <body>
+    <div id="App" class="container">
+      <div class="row">
+        <div class="col-6 mt-5">
+          <h3>Todos</h3>
+          <input
+            type="text"
+            class="form-control mb-4"
+            placeholder="想要做甚麼?"
+            v-model="newTodo"
+            @keyup.enter="addTodo"
+          />
+          <ul class="list-group">
+            <li
+              class="list-group-item d-flex justify-content-between"
+              v-for="(todo,index) in todos"
+              :key="todo.id"
+            >
+              <div class="form-check">
+                <!--{ css class名稱 : boolean }-->
+                <!-- 如果是true代表要套用該樣式 -->
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  v-model="todo.completed"
+                />
+                <label
+                  class="form-check-label"
+                  :class="{completed : todo.completed}"
+                >
+                  {{todo.title}}
+                </label>
+              </div>
+              <button
+                class="badge bg-danger rounded-pill border-0"
+                @click="removeTodo(index)"
+              >
+                X
+              </button>
+            </li>
+          </ul>
+          <div class="d-flex justify-content-between mt-4">
+            <strong>尚有{{remaining}}個工作未完成</strong>
+            <button type="button" class="btn btn-warning">清除完成工作</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+      const app = createApp({
+        // Options API
+        data() {
+          return {
+            todos: JSON.parse(localStorage.getItem("todos")) || [],
+            newTodo: "",
+          };
+        },
+        methods: {
+          addTodo() {
+            // console.log(this.newTodo);
+            const value = this.newTodo && this.newTodo.trim();
+            if (!value) {
+              return;
+            }
+            this.todos.push({
+              id: this.todos[ this.todos.length - 1].id + 1,
+              title: value,
+              completed: false,
+            });
+            this.newTodo = "";
+          },
+          editTodo() {},
+          removeTodo(index) {
+            // console.log("delete");
+            // const index = this.todos.indexOf(todo);
+            if (index !== -1) {
+              this.todos.splice(index, 1);
+            }
+          },
+        },
+        watch: {
+          //監控newTodo的資料有無異動
+          //有就執行handler這個funtion
+          // newTodo:{
+          //   handler(newTodo){
+          //   localStorage.setItem('todo',newTodo);
+          //   }
+          // }
+          todos: {
+            handler(todos) {
+              localStorage.setItem("todos", JSON.stringify(todos));
+            },
+            deep: true,
+          },
+        },
+        computed: {
+          remaining() {
+            let notFinished = this.todos.filter((todo) => !todo.completed);
+            return notFinished.length;
+          },
+        },
+      });
+      app.mount("#App");
+    </script>
+  </body>
+</html>
